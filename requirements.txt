@@ -1,0 +1,15 @@
+Flask==3.1.3
+Werkzeug==3.1.6
+pypdf==6.10.2
+pdfplumber==0.11.9
+reportlab==4.4.10
+Pillow==11.3.0
+pypdfium2==5.7.0
+openpyxl==3.1.5
+
+# Added in v2 — new features
+PyMuPDF==1.27.1        # redact, flatten, repair, grayscale
+pdf2docx==0.5.12       # PDF → Word
+weasyprint==68.1       # HTML → PDF  (also needs: brew install glib pango)
+pytesseract==0.3.13    # OCR         (also needs: brew install tesseract)
+pdf2image==1.17.0      # OCR pre-processing (also needs: brew install poppler)
