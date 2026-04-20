@@ -11,6 +11,7 @@ openpyxl==3.1.5
 # Added in v2 — new features
 PyMuPDF==1.27.1        # redact, flatten, repair, grayscale
 pdf2docx==0.5.12       # PDF → Word
+mammoth==1.12.0        # Word → PDF (docx→HTML stage)
 weasyprint==68.1       # HTML → PDF  (also needs: brew install glib pango)
 pytesseract==0.3.13    # OCR         (also needs: brew install tesseract)
 pdf2image==1.17.0      # OCR pre-processing (also needs: brew install poppler)

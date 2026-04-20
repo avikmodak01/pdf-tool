@@ -3,7 +3,7 @@ services:
     name: pdf-tool
     runtime: python
     plan: free
-    buildCommand: apt-get install -y -q qpdf poppler-utils && pip install -r requirements.txt
+    buildCommand: apt-get install -y -q qpdf poppler-utils libreoffice-headless libreoffice-writer && pip install -r requirements.txt
     startCommand: gunicorn app:app --workers 2 --timeout 300 --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION

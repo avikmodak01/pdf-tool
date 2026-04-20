@@ -171,6 +171,10 @@
                 <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="4" y="7" width="8" height="6" rx="1" fill="var(--card)" stroke="currentColor" stroke-width="1.2"/><rect x="7" y="10" width="8" height="4.5" rx="1" fill="var(--card)" stroke="currentColor" stroke-width="1.2"/></svg>
                 Images → PDF
             </button>
+            <button class="nav-item" data-target="tab-word-to-pdf">
+                <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="9" height="12" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M3 5h5M3 8h3M3 11h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M11 6l4 3-4 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Word → PDF
+            </button>
             <button class="nav-item" data-target="tab-pdf-to-word">
                 <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="9" height="12" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M3 5h5M3 8h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M11 6l4 4M15 6l-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
                 PDF → Word
@@ -573,6 +577,18 @@
             <input type="file" name="files" accept="image/jpeg,image/png" multiple required></div>
         <div class="file-list"></div>
         <button type="submit">Create PDF</button>
+    </form>
+</section>
+
+<!-- ── WORD → PDF ── -->
+<section id="tab-word-to-pdf" class="panel">
+    <div class="panel-head"><h1 class="panel-title">Word → PDF</h1><p class="panel-desc">Convert a Word document (.docx, .doc, .odt, .rtf) to PDF. Uses LibreOffice for full-fidelity conversion on the server.</p></div>
+    <form data-endpoint="/word-to-pdf" data-result="download">
+        <div class="drop-zone"><svg class="dz-icon" width="36" height="36" viewBox="0 0 36 36" fill="none"><rect x="3" y="3" width="22" height="28" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M7 11h14M7 17h10M7 23h14M7 29h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M27 14l6 4-6 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="dz-primary">Drop a Word file here</span><span class="dz-secondary">.docx · .doc · .odt · .rtf · click to browse</span><span class="dz-btn">Browse file</span>
+            <input type="file" name="file" accept=".docx,.doc,.odt,.rtf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required></div>
+        <div class="file-list"></div>
+        <button type="submit">Convert to PDF</button>
     </form>
 </section>
 

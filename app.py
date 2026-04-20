@@ -45,6 +45,12 @@ except ImportError:
     HAS_PDF2DOCX = False
 
 try:
+    import mammoth as _mammoth
+    HAS_MAMMOTH = True
+except ImportError:
+    HAS_MAMMOTH = False
+
+try:
     import weasyprint as _weasyprint
     HAS_WEASYPRINT = True
 except Exception:
@@ -1503,6 +1509,93 @@ def ocr_pdf():
                 writer.write(fp)
             return send_and_cleanup(out_path, "searchable.pdf", "application/pdf",
                                     extra_to_clean=[src_path])
+    except Exception as e:
+        try: src_path.unlink()
+        except: pass
+        return jsonify({"error": str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
+# 36. Word → PDF
+# ---------------------------------------------------------------------------
+def _libreoffice_bin():
+    """Return the path to the LibreOffice binary, or None if not found."""
+    for name in ("libreoffice", "soffice"):
+        path = shutil.which(name)
+        if path:
+            return path
+    mac = "/Applications/LibreOffice.app/Contents/MacOS/soffice"
+    return mac if Path(mac).exists() else None
+
+
+def _word_to_pdf_mammoth(src_path: Path, out_path: Path):
+    """Fallback: mammoth docx→HTML, then reportlab HTML→simple PDF."""
+    with open(src_path, "rb") as fh:
+        result = _mammoth.convert_to_html(fh)
+    html = result.value
+
+    # Strip tags to extract plain text (reportlab-safe)
+    import html as _html_mod
+    import re
+    text = _html_mod.unescape(re.sub(r"<[^>]+>", "\n", html))
+    lines = [l for l in text.splitlines() if l.strip()]
+
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.units import cm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet
+
+    doc = SimpleDocTemplate(str(out_path), pagesize=A4,
+                            leftMargin=2*cm, rightMargin=2*cm,
+                            topMargin=2*cm, bottomMargin=2*cm)
+    styles = getSampleStyleSheet()
+    story = []
+    for line in lines:
+        story.append(Paragraph(line, styles["Normal"]))
+        story.append(Spacer(1, 4))
+    doc.build(story)
+
+
+@app.route("/word-to-pdf", methods=["POST"])
+def word_to_pdf_route():
+    file = request.files.get("file")
+    if not file:
+        return jsonify({"error": "Please upload a Word file (.docx / .doc / .odt / .rtf)."}), 400
+
+    fname = secure_filename(file.filename)
+    allowed_exts = (".docx", ".doc", ".odt", ".rtf")
+    if not any(fname.lower().endswith(ext) for ext in allowed_exts):
+        return jsonify({"error": "Unsupported file type. Upload .docx, .doc, .odt or .rtf."}), 400
+
+    src_path = UPLOAD_DIR / f"{uuid.uuid4().hex}_{fname}"
+    file.save(src_path)
+
+    lo = _libreoffice_bin()
+
+    try:
+        if lo:
+            # Primary path — LibreOffice (full fidelity)
+            res = subprocess.run(
+                [lo, "--headless", "--convert-to", "pdf",
+                 "--outdir", str(OUTPUT_DIR), str(src_path)],
+                capture_output=True, text=True, timeout=180,
+            )
+            out_path = OUTPUT_DIR / (src_path.stem + ".pdf")
+            if res.returncode != 0 or not out_path.exists():
+                return jsonify({"error": f"Conversion failed: {res.stderr or 'unknown error'}"}), 500
+        elif HAS_MAMMOTH and fname.lower().endswith(".docx"):
+            # Fallback — mammoth + reportlab (text only, no rich formatting)
+            out_path = OUTPUT_DIR / f"word_{uuid.uuid4().hex}.pdf"
+            _word_to_pdf_mammoth(src_path, out_path)
+        else:
+            return jsonify({"error": (
+                "LibreOffice is required for this conversion. "
+                "On macOS: brew install libreoffice  "
+                "On Linux: apt-get install -y libreoffice-headless libreoffice-writer"
+            )}), 500
+
+        return send_and_cleanup(out_path, "converted.pdf", "application/pdf",
+                                extra_to_clean=[src_path])
     except Exception as e:
         try: src_path.unlink()
         except: pass
